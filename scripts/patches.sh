@@ -17,13 +17,12 @@ sed -i '/skip\=/ a skip=`mount | grep -q /dev/$device; echo $?`' `find package/ 
 
 sed -i 's/START=95/START=99/' `find package/ -follow -type f -path */ddns-scripts/files/ddns.init`
 
-sed -i 's/PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=master/' package/kernel/rtl8821cu/Makefile
-sed -i 's/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' package/kernel/rtl8821cu/Makefile
+#sed -i 's/PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=master/' package/kernel/rtl8821cu/Makefile
+#sed -i 's/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' package/kernel/rtl8821cu/Makefile
 
 mkdir -p `find package/ -follow -type d -path '*/pdnsd-alt'`/patches
 mv $GITHUB_WORKSPACE/patches/99-disallow-aaaa.patch `find package/ -follow -type d -path '*/pdnsd-alt'`/patches
 
-sed -i 's/5.0/1.0/' .ccache/ccache.conf || true
 
 line_number_INCLUDE_Xray=$[`grep -m1 -n 'Include Xray' package/custom/openwrt-passwall/luci-app-passwall/Makefile|cut -d: -f1`-1]
 sed -i $line_number_INCLUDE_Xray'd' package/custom/openwrt-passwall/luci-app-passwall/Makefile
@@ -98,11 +97,17 @@ sed -i '/uci commit luci/i\uci set luci.main.mediaurlbase="/luci-static/argon"' 
 
 # add r1s support to Lean's repo
 if [[ $DEVICE == 'r1s' ]]; then
-  cd ~ && git clone -b openwrt-21.02 https://github.com/immortalwrt/immortalwrt && cd immortalwrt
+  cd ~ && rm -rf immortalwrt/ && git clone -b openwrt-21.02 https://github.com/immortalwrt/immortalwrt && cd immortalwrt
   git log --grep r1s -i | grep '^commit ' | head -n -2 | cut -d' ' -f2 | tac | xargs git show | sed '0,/UENV/s//ATF/' > r1s.diff
   git show 124116564e8a6081e79cb2e87b0d87b2af99c583 632c4c91e7640a354dc421fa324fd705b734252d 7fb1b00f5f6214bf7a29d3781d260a7e7c8547c9 >> r1s.diff
   cd ~/lede && chmod +x target/linux/sunxi/base-files/etc/board.d/* && git apply ~/immortalwrt/r1s.diff
   merge_package https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/emortal/autocore
+fi
+
+# fix for r1p-lts
+if [[ $DEVICE == 'r1p-lts' ]]; then
+  git revert bd522ba3a1389457fdd3b63aba92731f16a18163 -X theirs --no-commit
+  sed -i 's/1.46/1.49/' package/boot/uboot-rockchip/Makefile
 fi
 
 case $DEVICE in
@@ -115,6 +120,4 @@ case $DEVICE in
 esac
 
 # ...
-if [[ $DEVICE != 'r5s' ]]; then
-  sed -i 's/kmod-usb-net-rtl8152/kmod-usb-net-rtl8152-vendor/' target/linux/rockchip/image/armv8.mk target/linux/sunxi/image/cortexa53.mk target/linux/sunxi/image/cortexa7.mk
-fi
+sed -i 's/kmod-usb-net-rtl8152/kmod-usb-net-rtl8152-vendor/' target/linux/rockchip/image/armv8.mk target/linux/sunxi/image/cortexa53.mk target/linux/sunxi/image/cortexa7.mk
