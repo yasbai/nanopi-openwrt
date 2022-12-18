@@ -80,11 +80,11 @@ case $status_page in
   *htm)
     line_number_FV=`grep -n 'Firmware Version' $status_page | cut -d: -f 1`
     sed -i '/ver\./d' $status_page
-    sed -i $line_number_FV' a <a href="https://github.com/klever1988/nanopi-openwrt" target="_blank">klever1988/nanopi-openwrt</a> '$strDate $status_page
+    sed -i $line_number_FV' a <a href="https://github.com/stupidloud/nanopi-openwrt" target="_blank">stupidloud/nanopi-openwrt</a> '$strDate $status_page
     ;;
   *js)
     line_number_FV=`grep -m1 -n 'var fields' $status_page | cut -d: -f1`
-    sed -i $line_number_FV' i var pfv = document.createElement('\''placeholder'\'');pfv.innerHTML = '\''<a href="https://github.com/klever1988/nanopi-openwrt" target="_blank">klever1988/nanopi-openwrt</a> '$strDate"';" $status_page
+    sed -i $line_number_FV' i var pfv = document.createElement('\''placeholder'\'');pfv.innerHTML = '\''<a href="https://github.com/stupidloud/nanopi-openwrt" target="_blank">stupidloud/nanopi-openwrt</a> '$strDate"';" $status_page
     line_number_FV=`grep -n 'Firmware Version' $status_page | cut -d : -f 1`
     sed -i '/Firmware Version/d' $status_page
     sed -i $line_number_FV' a _('\''Firmware Version'\''), pfv,' $status_page
@@ -94,6 +94,9 @@ done
 
 # set default theme to argon
 sed -i '/uci commit luci/i\uci set luci.main.mediaurlbase="/luci-static/argon"' `find package -type f -path '*/default-settings/files/*-default-settings'`
+
+## ugly fix of the read-only issue
+sed -i '3 i sed -i "/^exit.*/i\\/bin\\/mount -o remount,rw /" /etc/rc.local' `find package -type f -path '*/default-settings/files/*-default-settings'`
 
 # add r1s support to Lean's repo
 if [[ $DEVICE == 'r1s' ]]; then
@@ -121,3 +124,6 @@ esac
 
 # ...
 sed -i 's/kmod-usb-net-rtl8152/kmod-usb-net-rtl8152-vendor/' target/linux/rockchip/image/armv8.mk target/linux/sunxi/image/cortexa53.mk target/linux/sunxi/image/cortexa7.mk
+
+# temporary fix for upx
+sed -i 's/a46b63817a9c6ad5af7cf519332e859f11558592/1050de5171f70fd4ba113016e4db994e898c7be3/' package/lean/upx/Makefile
