@@ -7,6 +7,11 @@ function merge_package(){
 
     if [[ $1 == *'/trunk/'* || $1 == *'/branches/'* ]]; then
         svn export $1
+    elif [[ $1 == *'/tree/'* ]]; then
+        repo=`echo $1|awk -F'/tree/' '{print $1}'`
+        git clone --depth=1 --single-branch $repo .tmprepo
+        mv .tmprepo/$pn $pn
+        rm .tmprepo -rf
     else
         git clone --depth=1 --single-branch $3 $1
         rm -rf $pn/.git
@@ -31,7 +36,6 @@ merge_feed nas "https://github.com/linkease/nas-packages;master"
 merge_feed nas_luci "https://github.com/linkease/nas-packages-luci;main"
 rm -r package/feeds/nas_luci/luci-app-ddnsto
 merge_feed helloworld "https://github.com/stupidloud/helloworld;tmp"
-#merge_package https://github.com/stupidloud/openwrt-mos/trunk/luci-app-mosdns
 merge_package https://github.com/project-lede/luci-app-godproxy
 merge_package https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
 merge_package https://github.com/kuoruan/openwrt-frp frp
@@ -43,11 +47,11 @@ merge_package "-b 18.06 https://github.com/jerrykuku/luci-theme-argon"
 merge_package https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 merge_package https://github.com/NateLol/luci-app-oled
 merge_package "-b lede https://github.com/pymumu/luci-app-smartdns"
+merge_package https://github.com/xiaorouji/openwrt-passwall/tree/packages/brook
+merge_package https://github.com/xiaorouji/openwrt-passwall/tree/packages/chinadns-ng
+merge_package https://github.com/xiaorouji/openwrt-passwall/tree/packages/trojan-go
+merge_package https://github.com/xiaorouji/openwrt-passwall/tree/packages/trojan-plus
 merge_package "-b luci https://github.com/xiaorouji/openwrt-passwall"
-merge_package https://github.com/xiaorouji/openwrt-passwall/trunk/brook
-merge_package https://github.com/xiaorouji/openwrt-passwall/trunk/chinadns-ng
-merge_package https://github.com/xiaorouji/openwrt-passwall/trunk/trojan-go
-merge_package https://github.com/xiaorouji/openwrt-passwall/trunk/trojan-plus
 merge_package https://github.com/jerrykuku/lua-maxminddb
 merge_package https://github.com/jerrykuku/luci-app-vssr
 merge_package https://github.com/kongfl888/luci-app-adguardhome
