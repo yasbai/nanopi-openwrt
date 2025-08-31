@@ -42,4 +42,7 @@ CONFIG_DRIVER_11W_SUPPORT=y
 
 CONFIG_PACKAGE_luci-app-oled=y
 
+CONFIG_DEFAULT_nftables=y
+CONFIG_PACKAGE_kmod-nfnetlink-queue=y
 CONFIG_PACKAGE_kmod-nft-queue=y
+CONFIG_PACKAGE_nftables-json=y
